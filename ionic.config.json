@@ -1,0 +1,7 @@
+{
+  "name": "bookapp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
