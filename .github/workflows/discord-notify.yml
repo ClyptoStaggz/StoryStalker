@@ -3,7 +3,7 @@ name: Notify Discord on Push
 on:
   push:
     branches:
-      - main  # Change this to whatever branch you want notifications for (e.g., 'develop')
+      - main
 
 jobs:
   notify:
@@ -14,14 +14,19 @@ jobs:
 
       - name: Send commit info to Discord
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}  # Use the secret here
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-            COMMITS=$(git log -n 5 --pretty=format:"%h %s")
-            MESSAGE="Commits pushed to the main branch:\n$COMMITS"
+          COMMITS=$(git log -n 5 --pretty=format:"%h %s")
+          
+          COUNT=1
+          FORMATTED_COMMITS=""
+          while IFS= read -r line; do
+            FORMATTED_COMMITS="${FORMATTED_COMMITS}${COUNT}. \`${line}\`\n"
+            COUNT=$((COUNT + 1))
+          done <<< "$COMMITS"
 
-            # Use jq to properly escape the message
-            PAYLOAD=$(jq -n --arg content "$MESSAGE" '{content: $content}')
+          MESSAGE="**New push to \`main\` branch. Latest commits:**\n\n${FORMATTED_COMMITS}"
 
-            curl -X POST -H "Content-Type: application/json" \
-                 -d "$PAYLOAD" \
-                 $DISCORD_WEBHOOK_URL
+          curl -X POST -H "Content-Type: application/json" \
+               -d "{\"content\": \"$MESSAGE\"}" \
+               $DISCORD_WEBHOOK_URL
