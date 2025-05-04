@@ -1,0 +1,26 @@
+name: Notify Discord on Push
+
+on:
+  push:
+    branches:
+      - main  # Change this to whatever branch you want notifications for (e.g., 'develop')
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Send commit info to Discord
+          env:
+    DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  run: |
+    COMMITS=$(git log -n 5 --pretty=format:"%h %s" | sed ':a;N;$!ba;s/\n/\\n/g')
+    MESSAGE="Commits pushed to the main branch:\\n$COMMITS"
+
+    PAYLOAD=$(jq -n --arg msg "$MESSAGE" '{content: $msg}')
+    
+    curl -X POST -H "Content-Type: application/json" \
+         -d "$PAYLOAD" \
+         "$DISCORD_WEBHOOK_URL"
