@@ -13,12 +13,12 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          ACTOR="${{ github.actor }}"
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          COMMIT_SHA="${{ github.event.head_commit.id }}"
-          SHORT_SHA=$(echo $COMMIT_SHA | cut -c1-7)
+          BRANCH_NAME=$(echo "${GITHUB_REF##*/}")
+          COMMIT_HASH=$(git log -1 --pretty=format:"%h")
+          AUTHOR_NAME=$(git log -1 --pretty=format:"%an")
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
 
-          MESSAGE="**New commit to \`main\`**\n\n**Author:** $ACTOR\n**Commit:** \`$SHORT_SHA\`\n**Message:** $COMMIT_MSG"
+          MESSAGE="📦 New Push to Branch \`${BRANCH_NAME}\`\n**Author:** ${AUTHOR_NAME}\n**Commit:** \`${COMMIT_HASH}\` — _${COMMIT_MSG}_"
 
           curl -X POST -H "Content-Type: application/json" \
                -d "{\"content\": \"$MESSAGE\"}" \
