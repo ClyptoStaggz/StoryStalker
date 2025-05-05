@@ -34,7 +34,7 @@ jobs:
             --arg sha "$SHORT_SHA" \
             --arg msg "$COMMIT_MSG" \
             --arg files "$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/• /' | jq -Rs .)" \
-              '{content: "🚀 **New Commit Pushed**\n\n**Branch:** `\($branch)`\n**Author:** \($author)\n**Commit:** `\($sha)`\n**Message:** \($msg)\n\n**Files Changed:**\n\($files)"}')
+              '{content: "🚀  **New Commit Pushed**\n\n**Branch:** `\($branch)`\n**Author:** \($author)\n**Commit:** `\($sha)`\n**Message:** \($msg)\n\n**Files Changed:**\n\($files)"}')
 
             curl -X POST -H "Content-Type: application/json" \
                  -d "$MESSAGE" \
