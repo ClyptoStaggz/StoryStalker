@@ -16,27 +16,32 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          BRANCH_NAME=$(echo "${GITHUB_REF##*/}")
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
-          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+            BRANCH_NAME=$(echo "${GITHUB_REF##*/}")
+            SHORT_SHA=$(git rev-parse --short HEAD)
+            AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
+            COMMIT_MSG=$(git log -1 --pretty=format:'%s')
 
-          # Format and escape the list of changed files
-          FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/• /' | jq -Rs .)
+            # Check if it's a merge commit
+            if git log -1 --pretty=%p | grep -q ' '; then
+              # Merge commit, compare HEAD to its parent (HEAD^)
+              FILES_CHANGED=$(git diff --name-only HEAD^ HEAD | sed 's/^/• /' | jq -Rs .)
+            else
+              # Non-merge commit, normal commit
+              FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/• /' | jq -Rs .)
+            fi
 
-          # Escape other values too, just in case
-          ESCAPED_AUTHOR=$(echo "$AUTHOR_NAME" | jq -Rs .)
-          ESCAPED_MSG=$(echo "$COMMIT_MSG" | jq -Rs .)
+            # Escape the commit message and author
+            ESCAPED_MSG=$(echo "$COMMIT_MSG" | jq -Rs .)
+            ESCAPED_AUTHOR=$(echo "$AUTHOR_NAME" | jq -Rs .)
 
-          # Build the full JSON payload
-          MESSAGE=$(jq -n \
-            --arg branch "$BRANCH_NAME" \
-            --arg author "$AUTHOR_NAME" \
-            --arg sha "$SHORT_SHA" \
-            --arg msg "$COMMIT_MSG" \
-            --arg files "$FILES_CHANGED" \
-            '{content: "🚀  **New Commit Pushed**\n\n📂 **Branch:** `\($branch)`\n👤 **Author:** \($author)\n🔢 **Commit:** `\($sha)`\n📝 **Message:** \($msg)\n\n📁 **Files Changed:**\n\($files)"}')
+            MESSAGE=$(jq -n \
+              --arg branch "$BRANCH_NAME" \
+              --arg author "$AUTHOR_NAME" \
+              --arg sha "$SHORT_SHA" \
+              --arg msg "$COMMIT_MSG" \
+              --arg files "$FILES_CHANGED" \
+              '{content: "🚀 **New Commit Pushed**\n\n**Branch:** `\($branch)`\n**Author:** \($author)\n**Commit:** `\($sha)`\n**Message:** \($msg)\n\n**Files Changed:**\n\($files)"}')
 
-          curl -X POST -H "Content-Type: application/json" \
-               -d "$MESSAGE" \
-               $DISCORD_WEBHOOK_URL
+            curl -X POST -H "Content-Type: application/json" \
+                 -d "$MESSAGE" \
+                 $DISCORD_WEBHOOK_URL
