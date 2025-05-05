@@ -17,11 +17,19 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           BRANCH_NAME=$(echo "${GITHUB_REF##*/}")
-          COMMIT_HASH=$(git log -1 --pretty=format:"%h")
-          AUTHOR_NAME=$(git log -1 --pretty=format:"%an")
-          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
+          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+          FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/• /')
 
-          MESSAGE="📦 New Push to Branch \`${BRANCH_NAME}\`\n**Author:** ${AUTHOR_NAME}\n**Commit:** \`${COMMIT_HASH}\` — _${COMMIT_MSG}_"
+          MESSAGE="📢 **New Push to \`${BRANCH_NAME}\`**
+
+          👤 **Author:** ${AUTHOR_NAME}  
+          🔢 **Commit:** \`${SHORT_SHA}\`  
+          📝 **Message:** _${COMMIT_MSG}_
+
+          📁 **Files Changed:**  
+          ${FILES_CHANGED}"
 
           curl -X POST -H "Content-Type: application/json" \
                -d "{\"content\": \"$MESSAGE\"}" \
