@@ -29,12 +29,12 @@ jobs:
             ESCAPED_AUTHOR=$(echo "$AUTHOR_NAME" | jq -Rs .)
 
             MESSAGE=$(jq -n \
-              --arg branch "$BRANCH_NAME" \
-              --arg author "$AUTHOR_NAME" \
-              --arg sha "$SHORT_SHA" \
-              --arg msg "$COMMIT_MSG" \
-              --arg files "$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/• /' | jq -Rs .)" \
-              '{content: "📢 **New Push to `\($branch)`**\n\n👤 **Author:** \($author)\n🔢 **Commit:** `\($sha)`\n📝 **Message:** _\($msg)_\n\n📁 **Files Changed:**\n\($files)"}')
+            --arg branch "$BRANCH_NAME" \
+            --arg author "$AUTHOR_NAME" \
+            --arg sha "$SHORT_SHA" \
+            --arg msg "$COMMIT_MSG" \
+            --arg files "$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/• /' | jq -Rs .)" \
+              '{content: "🚀 **New Commit Pushed**\n\n**Branch:** `\($branch)`\n**Author:** \($author)\n**Commit:** `\($sha)`\n**Message:** \($msg)\n\n**Files Changed:**\n\($files)"}')
 
             curl -X POST -H "Content-Type: application/json" \
                  -d "$MESSAGE" \
