@@ -35,7 +35,7 @@ jobs:
               --arg sha "$SHORT_SHA" \
               --arg files "$FILE_COUNT" \
               --arg url "$COMMIT_URL" \
-              '{content: "📢 **New Commit to `\($branch)`**\n\n👤 **Author:** \($author)\n🔢 **Commit:** `\($sha)`\n📝 **Message:** \($msg)\n📁 **Files Changed:** \($files)\n🔗 [View Commit](\($url))"}')
+              '{content: "📢 **New Commit to `\($branch)`**\n\n **Author:** \($author)\n **Commit:** `\($sha)`\n **Message:** \($msg)\n📁 **Files Changed:** \($files)\n🔗 [View Commit](\($url))"}')
 
             curl -X POST -H "Content-Type: application/json" \
                  -d "$MESSAGE" \
